@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
+  name: api-notifications-internal
+  namespace: notifications
+
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: api-notifications.my.cloud
+    http:
+      paths:
+      - backend:
+          service:
+            name: notifications
+            port:
+              number: 80
+        path: /
+        pathType: Prefix

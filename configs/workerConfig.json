@@ -1,0 +1,18 @@
+{
+  "logger": {
+    "level": "debug",
+    "env": "local",
+    "filename": "./app.log",
+    "maxSize": 200,
+    "maxBackups": 10,
+    "maxAge": 30
+  },
+  "jetStream": {
+    "nats": {
+      "url": "nats://0.0.0.0:61957",
+      "user": "local",
+      "pass": "WbS6KeDuSSKAqAPQo00Rjk6KW0kRyfYh",
+      "clientName": "notifications"
+    }
+  }
+}

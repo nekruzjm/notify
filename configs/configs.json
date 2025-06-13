@@ -1,0 +1,84 @@
+{
+  "podName": "notifications-local",
+  "notifications": {
+    "server": {
+      "port": ":9999"
+    },
+    "stage": "local",
+    "loadLimit": 100000
+  },
+  "databases": {
+    "notifications": {
+      "notificationsDB": {
+        "master": "user=postgres password=postgres dbname=notification_db host=127.0.0.1 port=5432 sslmode=disable",
+        "replica": "user=postgres password=postgres dbname=notification_db host=127.0.0.1 port=5432 sslmode=disable",
+        "maxConn": 50
+      },
+      "romDb": {
+        "master": "user=postgres password=postgres dbname=rom_db host=127.0.0.1 port=5432 sslmode=disable",
+        "replica": "user=postgres password=postgres dbname=rom_db host=127.0.0.1 port=5432 sslmode=disable",
+        "maxConn": 50
+      }
+    }
+  },
+  "logger": {
+    "level": "debug",
+    "env": "local",
+    "filename": "./app.log",
+    "maxSize": 200,
+    "maxBackups": 10,
+    "maxAge": 30
+  },
+  "sentry": {
+    "dsn": "https://14b7d9ee18793154e60d7f3366943294@sentry.my.eu/140",
+    "debug": true,
+    "stage": "dev",
+    "serverName": "Notifications",
+    "environment": "Dev"
+  },
+  "jetStream": {
+    "nats": {
+      "url": "nats://0.0.0.0:61957",
+      "user": "local",
+      "pass": "WbS6KeDuSSKAqAPQo00Rjk6KW0kRyfYh",
+      "clientName": "notifications"
+    }
+  },
+  "redis": {
+    "url": "localhost",
+    "password": "",
+    "db": 0,
+    "cluster": false,
+    "port": "6379",
+    "ports": [
+      "6379"
+    ]
+  },
+  "fileManager": {
+    "storage": "aws-s3",
+    "storageURL": "https://s3.eu-central-1.amazonaws.com/my.notifications/",
+    "bucket": "static.my.cloud",
+    "directory": "dev/news/"
+  },
+  "email": {
+    "host": "smtp.gmail.com",
+    "port": "587",
+    "from": "reset@my",
+    "password": ""
+  },
+  "sms": {
+    "url": "https://smsc.ru/sys/send.php",
+    "token": "1234567890"
+  },
+  "telegram": {
+    "dbStatBot": "123123123",
+    "tcbTransferBot": "123123123",
+    "providerSuggestionBot": "123123123"
+  },
+  "admin": {
+    "url": "http://localhost:3000"
+  },
+  "tinyPng": {
+    "apiKey": "123456789"
+  }
+}

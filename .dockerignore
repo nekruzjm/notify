@@ -1,0 +1,14 @@
+**/.dockerignore
+**/.env
+**/.git
+**/.github
+**/.gitignore
+**/.gitmodules
+**/.idea
+**/.vs
+**/.sql
+**/.vscode
+**/docker-compose*
+**/Dockerfile*
+LICENSE
+README.md

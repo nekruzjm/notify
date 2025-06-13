@@ -1,0 +1,38 @@
+version: "2"
+linters:
+  enable:
+    - bidichk
+    - bodyclose
+    - copyloopvar
+    - forbidigo
+    - forcetypeassert
+    - perfsprint
+    - staticcheck
+    - whitespace
+  disable:
+    - ineffassign
+    - staticcheck
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - errcheck
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

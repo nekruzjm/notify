@@ -1,0 +1,524 @@
+basePath: /api
+definitions:
+  event.eventModel:
+    properties:
+      body:
+        $ref: '#/definitions/language.Language'
+      category:
+        type: string
+      createdAt:
+        type: string
+      extraData:
+        additionalProperties:
+          type: string
+        type: object
+      id:
+        type: integer
+      image:
+        $ref: '#/definitions/language.Language'
+      link:
+        type: string
+      scheduledAt:
+        type: string
+      status:
+        type: string
+      title:
+        $ref: '#/definitions/language.Language'
+      topic:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  event.request:
+    properties:
+      body:
+        $ref: '#/definitions/language.Language'
+      category:
+        type: string
+      extraData:
+        additionalProperties:
+          type: string
+        type: object
+      link:
+        type: string
+      scheduledAt:
+        type: string
+      status:
+        type: string
+      title:
+        $ref: '#/definitions/language.Language'
+      topic:
+        type: string
+    type: object
+  language.Language:
+    properties:
+      en:
+        type: string
+      ru:
+        type: string
+      tg:
+        type: string
+      uz:
+        type: string
+    type: object
+  push.externalRequest:
+    properties:
+      body:
+        $ref: '#/definitions/language.Language'
+      personExternalRef:
+        example: "123456"
+        type: string
+      phone:
+        example: "+992111111111"
+        type: string
+      showInFeed:
+        type: boolean
+      title:
+        $ref: '#/definitions/language.Language'
+      type:
+        example: otp, push
+        type: string
+    required:
+    - body
+    - phone
+    - showInFeed
+    - title
+    - type
+    type: object
+  resp.Response:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+      payload: {}
+    type: object
+host: api-notifications.dev.my.cloud
+info:
+  contact:
+    email: jamshedzodnekruz@gmail.com
+    name: API Support
+  termsOfService: http://swagger.io/terms/
+  title: Notifications API
+  version: "1.0"
+paths:
+  /notifications-external/v1/push:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        All fields except `personExternalRef` (crm_client_id) are required.
+        - If you want to send push with `personExternalRef`, do not provide `phone`.
+        - If `showInFeed` is true, the push will be shown in the feed; otherwise, it will be hidden.
+        - If the users status is inactive or their push setting is disabled, the push will be saved in the feed but not sent to the device.
+        In that case, the payload will be `inactive_user#fake_message_id` or `disabled_push#fake_message_id`.
+      parameters:
+      - description: Provide user ID created on the server side
+        in: header
+        name: X-UserId
+        required: true
+        type: string
+      - description: Provide unique request ID to build hash and track the request
+        in: header
+        name: X-RequestId
+        required: true
+        type: string
+      - description: Provide current date in RFC1123 format (e.g., Mon, 02 Jan 2006
+          15:04:05 MST) to build hash
+        in: header
+        name: X-Date
+        required: true
+        type: string
+      - description: Provide user action (push, sms) to send push
+        in: header
+        name: X-UserAction
+        required: true
+        type: string
+      - description: Provide hash sum built with HMAC-SHA256 from the `X-Date:X-RequestId`
+          using the secret key created on the server side
+        in: header
+        name: X-RequestDigest
+        required: true
+        type: string
+      - description: Request payload
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/push.externalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      security:
+      - SignatureAuth: []
+      tags:
+      - External
+  /notifications-internal/v1/events:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: apply filter with id
+        in: query
+        name: id
+        type: string
+      - description: apply filter with status
+        in: query
+        name: status
+        type: string
+      - description: apply filter with topic
+        in: query
+        name: topic
+        type: string
+      - description: apply filter with limit, 10 settled by default
+        in: query
+        name: limit
+        type: string
+      - description: apply filter with offset, 0 settled by default
+        in: query
+        name: offset
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/resp.Response'
+            - properties:
+                payload:
+                  items:
+                    $ref: '#/definitions/event.eventModel'
+                  type: array
+              type: object
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "404":
+          description: List not found
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      summary: Get list of events
+      tags:
+      - Events
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/event.request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/resp.Response'
+            - properties:
+                payload:
+                  $ref: '#/definitions/event.eventModel'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      summary: Create event
+      tags:
+      - Events
+  /notifications-internal/v1/events/{id}:
+    delete:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      summary: Delete event
+      tags:
+      - Events
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/event.request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/resp.Response'
+            - properties:
+                payload:
+                  $ref: '#/definitions/event.eventModel'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      summary: Update event
+      tags:
+      - Events
+  /notifications-internal/v1/events/{id}/image/{language}:
+    delete:
+      description: Provider event id - `{id}` and multi-lang image key - `{language}`
+        as api route var to remove specific image of event
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/resp.Response'
+            - properties:
+                payload:
+                  $ref: '#/definitions/event.eventModel'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      summary: Remove image
+      tags:
+      - Events
+    post:
+      consumes:
+      - multipart/form-data
+      description: Provider event id - `{id}` and multi-lang image key - `{language}`
+        as api route var to upload image for event
+      parameters:
+      - description: Load images with png, jpg, jpeg extensions
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/resp.Response'
+            - properties:
+                payload:
+                  $ref: '#/definitions/event.eventModel'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      summary: Upload image
+      tags:
+      - Events
+  /notifications-internal/v1/events/{id}/load-all-users:
+    post:
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/resp.Response'
+            - properties:
+                payload:
+                  $ref: '#/definitions/event.eventModel'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      summary: Subscribe all users to the event
+      tags:
+      - Events
+  /notifications-internal/v1/events/{id}/load-users:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: CSV file with `userID` header and data. Do not provide other
+          headers
+        in: formData
+        name: users
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/resp.Response'
+            - properties:
+                payload:
+                  $ref: '#/definitions/event.eventModel'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      summary: Subscribe list of users to event
+      tags:
+      - Events
+  /notifications-internal/v1/events/{id}/run:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/resp.Response'
+            - properties:
+                payload:
+                  $ref: '#/definitions/event.eventModel'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "401":
+          description: Invalid authorization data
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/resp.Response'
+        "500":
+          description: Internal Error
+          schema:
+            $ref: '#/definitions/resp.Response'
+      summary: Run event manually
+      tags:
+      - Events
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

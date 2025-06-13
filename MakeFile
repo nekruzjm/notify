@@ -1,0 +1,36 @@
+run_go_mod:
+	go mod tidy
+
+run_go_build_gc:
+	go build -gcflags="-m" ./...
+
+run_docker_compose_up:
+	 docker-compose up
+
+run_pprof_heap:
+	curl  http://localhost:9999/debug/pprof/heap > heap.out
+	go tool pprof -http=:9997 heap.out
+
+	curl  https://api-notifications.dev.my.cloud/debug/pprof/heap > heap.out
+	go tool pprof -http=:9998 heap.out
+
+	curl  https://api-notifications.my.cloud/debug/pprof/heap > heap.out
+	go tool pprof -http=:9999 heap.out
+
+run_go_linter:
+	golangci-lint run -c .golangci.yml
+
+run_struct_align:
+	aligo check ./...
+
+run_docs:
+	swag init -g internal/api/transport/http/http.go -o ./docs
+	swag fmt
+
+services := notifications worker
+run_fx_tests:
+	for service in $(services); do \
+		go test -v -run Test_Deps cmd/$$service/main_test.go || exit 1; \
+	done
+
+validate_app: run_fx_tests run_go_linter run_struct_align run_docs
